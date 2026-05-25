@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
     QTableWidgetItem, QComboBox, QPushButton, QLabel,
     QHeaderView, QGroupBox, QDoubleSpinBox, QGridLayout,
-    QFileDialog, QMessageBox, QInputDialog
+    QFileDialog, QMessageBox, QInputDialog, QSizePolicy
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
@@ -23,17 +23,22 @@ class TabEconomia(QWidget):
         self.moneda = self.db.get_config('moneda') or '$'
 
         layout = QVBoxLayout(self)
+        layout.setSpacing(8)
 
         self._crear_cards_resumen(layout)
 
+        fila_filtros = QHBoxLayout()
+        fila_filtros.addWidget(QLabel('Animal:'))
         self.selector_animal = QComboBox()
         self.selector_animal.addItem('Todos los animales', None)
         animales = self.db.get_animales()
         for a in animales:
             self.selector_animal.addItem(a['nombre'], a['id'])
         self.selector_animal.currentIndexChanged.connect(self._actualizar_todo)
-        layout.addWidget(self.selector_animal)
+        self.selector_animal.setMinimumHeight(30)
+        fila_filtros.addWidget(self.selector_animal, 1)
 
+        fila_filtros.addWidget(QLabel('Vista:'))
         self.selector_seccion = QComboBox()
         self.selector_seccion.addItems([
             'Evolución de Costos',
@@ -42,20 +47,24 @@ class TabEconomia(QWidget):
             'Resumen Mensual'
         ])
         self.selector_seccion.currentIndexChanged.connect(self._cambiar_seccion)
-        layout.addWidget(self.selector_seccion)
+        self.selector_seccion.setMinimumHeight(30)
+        fila_filtros.addWidget(self.selector_seccion, 1)
+        layout.addLayout(fila_filtros)
 
         self.fig = Figure(facecolor=COLORS['bg_dark'])
         self.canvas = FigureCanvas(self.fig)
-        layout.addWidget(self.canvas)
+        self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.canvas.setMinimumHeight(320)
+        layout.addWidget(self.canvas, 3)
 
         self.tabla_comparativa = QTableWidget()
         self.tabla_comparativa.setVisible(False)
-        layout.addWidget(self.tabla_comparativa)
+        layout.addWidget(self.tabla_comparativa, 2)
 
         self.simulador_widget = QWidget()
         self.simulador_widget.setVisible(False)
         self._crear_simulador(self.simulador_widget)
-        layout.addWidget(self.simulador_widget)
+        layout.addWidget(self.simulador_widget, 2)
 
         self._actualizar_todo()
 
@@ -95,7 +104,7 @@ class TabEconomia(QWidget):
                     border: 2px solid {color};
                     border-radius: 8px;
                     margin-top: 8px;
-                    padding-top: 12px;
+                    padding-top: 8px;
                     color: {color};
                     font-weight: bold;
                 }}
@@ -104,12 +113,12 @@ class TabEconomia(QWidget):
 
             card_layout = QVBoxLayout(card)
             lbl_valor = QLabel(valor)
-            lbl_valor.setStyleSheet(f'font-size: 18px; font-weight: bold; color: {COLORS["text"]};')
+            lbl_valor.setStyleSheet(f'font-size: 15px; font-weight: bold; color: {COLORS["text"]};')
             lbl_valor.setAlignment(Qt.AlignmentFlag.AlignCenter)
             card_layout.addWidget(lbl_valor)
 
             lbl_sub = QLabel(subtitulo)
-            lbl_sub.setStyleSheet(f'font-size: 10px; color: {COLORS["text_dim"]};')
+            lbl_sub.setStyleSheet(f'font-size: 9px; color: {COLORS["text_dim"]};')
             lbl_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
             card_layout.addWidget(lbl_sub)
 
@@ -136,6 +145,9 @@ class TabEconomia(QWidget):
 
         btn_simular = QPushButton('🔄 Simular')
         btn_simular.setObjectName('btn_primario')
+        btn_simular.setMinimumHeight(30)
+        btn_simular.setMaximumHeight(34)
+        btn_simular.setStyleSheet('font-size: 11px; padding: 4px 10px;')
         btn_simular.clicked.connect(self._ejecutar_simulacion)
         layout.addWidget(btn_simular)
 
